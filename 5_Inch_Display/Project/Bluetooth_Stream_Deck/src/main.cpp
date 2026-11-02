@@ -46,10 +46,18 @@ static constexpr size_t TAP_QUEUE_LEN = 8;
 #define TOUCH_INT 18
 
 // ---------- Display ----------
-// VIEWE UEDX80480050E-WB: ST7262 RGB panel, 16-bit RGB565 bus, 20 MHz PCLK,
-// negative HSYNC/VSYNC polarity, DE enables on high. Timings from the vendor
-// board definition: HPW 1, HBP 42, HFP 20, VPW 10, VBP 12, VFP 4.
+// VIEWE UEDX80480050E-WB: ST7262 RGB panel, 16-bit RGB565 bus, negative
+// HSYNC/VSYNC polarity, DE enables on high. Timings from the vendor board
+// definition: HPW 1, HBP 42, HFP 20, VPW 10, VBP 12, VFP 4.
 // DATA0-4 = B, DATA5-10 = G, DATA11-15 = R on the 16-bit bus.
+//
+// PCLK runs at 15 MHz on purpose. The vendor's ESP-IDF stack drives this panel
+// at 20 MHz with an esp_lcd DMA bounce buffer (WIDTH x 10); Arduino_GFX 1.4.7
+// has no bounce-buffer support, so the scanout DMA reads the PSRAM framebuffer
+// directly and 20 MHz outruns sustainable PSRAM bandwidth - the panel drifts
+// and glitches constantly. 15 MHz is the proven-stable rate for this exact
+// stack (same library, same ST7262 panel, same OPI-PSRAM ESP32-S3) on the
+// CrowPanel 7" build.
 Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     40, 41, 39, 42,      // DE, VSYNC, HSYNC, PCLK
     45, 48, 47, 21, 14,  // R0-R4 (DATA11-15)
@@ -57,7 +65,7 @@ Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
     8, 3, 46, 9, 1,      // B0-B4 (DATA0-4)
     0, 20, 1, 42,        // hsync polarity, front porch, pulse width, back porch
     0, 4, 10, 12,        // vsync polarity, front porch, pulse width, back porch
-    1, 20000000);        // PCLK active on falling edge, 20 MHz
+    1, 15000000);        // PCLK active on falling edge, 15 MHz (see note above)
 
 Arduino_RGB_Display *gfx = new Arduino_RGB_Display(800, 480, rgbpanel, 0, true);
 

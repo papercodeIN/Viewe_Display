@@ -142,6 +142,7 @@ flash.ps1         Windows build-and-upload helper
 | No COM port | Try another USB-C cable that supports data; connect to the CH340C port. |
 | Upload fails | Close serial monitors using the port, then hold **BOOT** while retrying. |
 | Blank screen | Confirm the board definition uses 16 MB flash / OPI PSRAM settings. |
+| Screen glitches / drifts constantly | The scanout clock is tuned to 15 MHz because Arduino_GFX has no DMA bounce buffers (the vendor's 20 MHz ESP-IDF config assumes them). If it ever recurs, lower `15000000` in `src/main.cpp` further (e.g. `12000000`) and reflash. |
 | Touch stays dead | Set `FORCE_TOUCH_RESET=1` in `platformio.ini`, rebuild, and reflash — this pulses the GT911 RST/INT pins (GPIO38/18) on every boot. |
 | BT Stream Deck does not appear | Confirm the display is powered on, wait a few seconds, then scan again. |
 | Connect/disconnect cycling in Windows | Remove every **BT Stream Deck** entry in Windows Bluetooth settings, restart the display, and pair once — stale bond keys from older builds cause this loop. |
