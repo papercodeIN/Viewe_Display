@@ -19,7 +19,7 @@
 
 A Bluetooth LE HID keyboard Stream Deck for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 display (800x480, capacitive touch). The touchscreen shows a grid of tiles, and each tap sends a BLE HID media key or keyboard shortcut directly to the paired computer. No WiFi connection or companion server is needed.
 
-**Status — firmware complete, build-tested.** The firmware is a port of the working [CrowPanel 7" Bluetooth Stream Deck](https://github.com/papercodeIN/Elecrow/tree/main/Project/Bluetooth_Stream_Deck) in the [Elecrow repository](https://github.com/papercodeIN/Elecrow). Both displays share the same recipe — ESP32-S3, 800x480 RGB panel, GT911 capacitive touch — so the port is mostly pin and board configuration. The PlatformIO build passes and the host-side action-map tests are green; on-hardware validation is the last step.
+**Status — hardware-tested and working.** The firmware is a port of the working [CrowPanel 7" Bluetooth Stream Deck](https://github.com/papercodeIN/Elecrow/tree/main/Project/Bluetooth_Stream_Deck) in the [Elecrow repository](https://github.com/papercodeIN/Elecrow). Both displays share the same recipe — ESP32-S3, 800x480 RGB panel, GT911 capacitive touch — so the port is mostly pin and board configuration. The PlatformIO build passes, the host-side action-map tests are green, and the deck is verified on the VIEWE 5-inch: display and touch run stable (15 MHz PCLK) and BLE pairing plus tile actions work end to end.
 
 ## What You Need
 
