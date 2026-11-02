@@ -38,7 +38,7 @@ See the [5-inch board page](<5_Inch_Display/README.md>) for setup notes and proj
 
 | Project | Description |
 |---|---|
-| [Bluetooth Stream Deck](<5_Inch_Display/Project/Bluetooth_Stream_Deck/README.md>) | Touchscreen shortcut panel that sends BLE HID media keys and keyboard shortcuts to the paired computer; port of the CrowPanel 7" build, in development |
+| [Bluetooth Stream Deck](<5_Inch_Display/Project/Bluetooth_Stream_Deck/README.md>) | Touchscreen shortcut panel that sends BLE HID media keys and keyboard shortcuts to the paired computer; port of the CrowPanel 7" build, firmware complete and build-tested |
 
 ### Round display — model to be added
 

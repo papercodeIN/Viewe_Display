@@ -19,7 +19,7 @@
 
 A Bluetooth LE HID keyboard Stream Deck for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 display (800x480, capacitive touch). The touchscreen shows a grid of tiles, and each tap sends a BLE HID media key or keyboard shortcut directly to the paired computer. No WiFi connection or companion server is needed.
 
-**Status — in development.** The firmware is a port of the working [CrowPanel 7" Bluetooth Stream Deck](https://github.com/papercodeIN/Elecrow/tree/main/Project/Bluetooth_Stream_Deck) in the [Elecrow repository](https://github.com/papercodeIN/Elecrow). Both displays share the same recipe — ESP32-S3, 800x480 RGB panel, GT911 capacitive touch — so the port is mostly pin and board configuration. The sections below describe the finished design and the VIEWE-specific hardware details.
+**Status — firmware complete, build-tested.** The firmware is a port of the working [CrowPanel 7" Bluetooth Stream Deck](https://github.com/papercodeIN/Elecrow/tree/main/Project/Bluetooth_Stream_Deck) in the [Elecrow repository](https://github.com/papercodeIN/Elecrow). Both displays share the same recipe — ESP32-S3, 800x480 RGB panel, GT911 capacitive touch — so the port is mostly pin and board configuration. The PlatformIO build passes and the host-side action-map tests are green; on-hardware validation is the last step.
 
 ## What You Need
 
@@ -80,15 +80,49 @@ After this one-time cleanup, the pairing survives reboots on both sides. If pair
 
 ## Build and Flash
 
-This will be a PlatformIO project. Build and upload steps are identical to the [CrowPanel 7" Bluetooth Stream Deck](https://github.com/papercodeIN/Elecrow/tree/main/Project/Bluetooth_Stream_Deck): open the project folder in VS Code with PlatformIO, build the environment, and upload to the display's CH340/UART port. The final environment name and board definition will be documented here once the port lands.
+This is a PlatformIO project — environment `viewe_5`, with a vendored board definition in `boards/` for the 16 MB flash / OPI PSRAM variant.
 
-If upload fails, hold the **BOOT** button while connecting or resetting, then upload again.
+### Option 1: PlatformIO Core
+
+Build from the project folder:
+
+```sh
+python -m platformio run -e viewe_5
+```
+
+Upload to the display, replacing `COM5` with the CH340C port:
+
+```sh
+python -m platformio run -e viewe_5 -t upload --upload-port COM5
+```
+
+Or run `./flash.ps1`; it builds the firmware and asks which COM port to use.
+
+### Option 2: VS Code
+
+1. Install the PlatformIO IDE extension.
+2. Open this folder in VS Code.
+3. Use **PlatformIO > Build** to compile, **PlatformIO > Upload** to flash.
+
+### If Upload Fails
+
+Close serial monitors and other programs using the COM port, then hold the **BOOT** button while connecting or resetting and upload again.
+
+Use the CH340/UART port, not the native USB port. The native USB pins are shared with the touch controller on this display. The serial monitor uses **115200** baud.
 
 ## How It Works
 
 The firmware drives the 800x480 RGB panel through an LVGL interface, reads touch positions from the GT911 over I2C, and sends BLE HID keyboard/consumer reports to the paired host over the ESP32-S3 Bluetooth stack. Wi-Fi is unused, so the radio is dedicated to Bluetooth.
 
 The touch controller shares GPIO19/20 with the ESP32-S3's native USB pins. Firmware therefore keeps USB CDC disabled, and flashing/serial output runs over the CH340C UART port at 115200 baud.
+
+## Testing
+
+Static checks for the tile action map live in `tests/test_action_map.py`. They verify every tile key has a matching handler in `send_action()`, there are no orphan handlers, and the 4x4 grid assertion is in place. Run them without a device:
+
+```sh
+python tests/test_action_map.py
+```
 
 ## Project Structure
 
@@ -108,7 +142,7 @@ flash.ps1         Windows build-and-upload helper
 | No COM port | Try another USB-C cable that supports data; connect to the CH340C port. |
 | Upload fails | Close serial monitors using the port, then hold **BOOT** while retrying. |
 | Blank screen | Confirm the board definition uses 16 MB flash / OPI PSRAM settings. |
-| Touch stays dead | Check the GT911 wiring notes (SDA GPIO19, SCL GPIO20, RST GPIO38) in the [board README](<../../README.md>). |
+| Touch stays dead | Set `FORCE_TOUCH_RESET=1` in `platformio.ini`, rebuild, and reflash — this pulses the GT911 RST/INT pins (GPIO38/18) on every boot. |
 | BT Stream Deck does not appear | Confirm the display is powered on, wait a few seconds, then scan again. |
 | Connect/disconnect cycling in Windows | Remove every **BT Stream Deck** entry in Windows Bluetooth settings, restart the display, and pair once — stale bond keys from older builds cause this loop. |
 | Pairing lost after erasing flash | Erasing the flash deletes the ESP32-side bond; remove the device in Windows and pair again. |

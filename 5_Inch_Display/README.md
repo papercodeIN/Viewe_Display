@@ -69,7 +69,7 @@ These are reference settings, not a universal configuration for every project or
 
 | Folder | Description | Readiness |
 |---|---|---|
-| [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID shortcut and media-key deck for the paired computer | Port of the CrowPanel 7" build, in development |
+| [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID shortcut and media-key deck for the paired computer | Firmware complete, build-tested; hardware validation pending |
 
 ## Manufacturer resources
 
