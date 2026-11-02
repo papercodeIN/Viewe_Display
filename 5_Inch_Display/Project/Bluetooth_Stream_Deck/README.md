@@ -90,4 +90,4 @@ If this project helps you, connect with us:
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-%2B91--9974477759-25D366?logo=whatsapp&logoColor=white)](https://wa.me/919974477759)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/pylin)
 
-Vendor socials and full contact details are in the [repository README](<../../README.md>).
+Vendor socials and full contact details are in the [board README](<../../README.md>).
