@@ -1,63 +1,87 @@
-# VIEWE 5" ESP32-S3 Display (UEDX80480050E-WB)
+<div align="center">
 
-Projects and examples for the VIEWE 5-inch ESP32-S3 smart display — 800 × 480 IPS panel with capacitive touch, Wi-Fi and Bluetooth 5 LE.
+<img src="https://visitor-badge.laobi.icu/badge?page_id=papercodeIN.Viewe_Display.5_Inch_Display" alt="5-inch display page visitors" height="20" />
 
-![Hardware](https://img.shields.io/badge/hardware-VIEWE_5inch_ESP32--S3-2F4F7F)
-![MCU](https://img.shields.io/badge/MCU-ESP32--S3_240MHz-E7352C?logo=espressif&logoColor=white)
-![UI](https://img.shields.io/badge/UI-LVGL-32A3CE)
-![Wireless](https://img.shields.io/badge/wireless-Wi--Fi_&_BLE_5-0082FC?logo=bluetooth&logoColor=white)
+# VIEWE 5 Inch Display
+
+**ESP32-S3 800×480 smart display: setup notes, projects, and project status**
+
+[Official GitHub](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display) · [Product page](https://viewedisplay.com/product/esp32-5-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl/) · [Display Wiki](https://www.display-wiki.com/)
+
+<p align="center">
+  <strong>Support</strong><br>
+  If these projects help you, connect with us on social media:
+</p>
+
+
+[![YouTube](https://img.shields.io/badge/YouTube-Fusion_Automate-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCKKhdFV0q8CV5vWUDfiDfTw)
+[![Telegram](https://img.shields.io/badge/Telegram-%40fusionautomate-26A5E4?logo=telegram&logoColor=white)](https://t.me/fusionautomate)
+[![Instagram](https://img.shields.io/badge/Instagram-%40fusion__automate-E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/fusion_automate)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-%2B91--9974477759-25D366?logo=whatsapp&logoColor=white)](https://wa.me/919974477759)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/pylin)
+</div>
+
+---
+
+## Overview
+
+This folder contains notes and projects for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 smart display (800×480 IPS, GT911 capacitive touch, Wi-Fi and Bluetooth 5 LE). Project readiness varies: check the individual project README before building or flashing.
+
+## Hardware reference
+
+| Component | Detail |
+|---|---|
+| Model | UEDX80480050E-WB-A (WB-B is the newer hardware revision; no software difference) |
+| Display | 5" IPS, 800×480, 40-pin RGB 24-bit (RGB565), driver ST7262/ST72611 |
+| Touch | Multi-point capacitive (CTP), GT911 over I2C — SDA GPIO19, SCL GPIO20, RST GPIO38 |
+| MCU | ESP32-S3-N16R8, dual-core LX7 @ 240 MHz |
+| Memory | 520 KB SRAM · 8 MB PSRAM (OPI) · 16 MB Flash |
+| Wireless | 2.4 GHz Wi-Fi 802.11 b/g/n, Bluetooth 5 (LE), BLE Mesh |
+| USB | Type-C via CH340C — power, flashing, and serial |
+| Extras | Micro SD card slot (SPI), WS2812B RGB LED, BOOT (GPIO0) / RESET buttons |
+| Power | 5 V, 150 mA, −20 ~ 70 ℃ operating |
+
+> The touch controller shares GPIO19/20 with the ESP32-S3's native USB pins, so firmware keeps USB CDC disabled and flashing/serial runs over the CH340C UART port.
+
+## Tested configuration reference
+
+The following versions and Arduino IDE settings are from the manufacturer's documented setup for this board. Library and board-core compatibility can vary; consult the project README if a specific project requires a different configuration.
+
+| Component | Documented version |
+|---|---:|
+| ESP32 Arduino core | 3.0.0+ |
+| ESP32_Display_Panel | 1.0.3+ (installs ESP32_IO_Expander and esp-lib-utils) |
+| LVGL | 8.4.0 |
+
+| Arduino IDE setting | Documented value |
+|---|---|
+| Board | ESP32S3 Dev Module |
+| Flash size | 16MB (128Mb) |
+| Partition scheme | 16M Flash (3MB APP/9.9MB FATFS) |
+| PSRAM | OPI PSRAM |
+| USB CDC On Boot | Disabled |
+
+Board macro: set `ESP_PANEL_BOARD_DEFAULT_USE_SUPPORTED` to `1` and uncomment `#define BOARD_VIEWE_UEDX80480050E_WB_A` in `esp_panel_board_supported_conf.h`.
+
+These are reference settings, not a universal configuration for every project or core version.
 
 ## Projects
 
-Standalone PlatformIO projects, each with its own build guide:
-
-| Project | Description |
-|---|---|
-| [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID keyboard deck — touch tiles send shortcuts and media keys straight to the paired computer. Port of the CrowPanel 7" build, in development |
+| Folder | Description | Readiness |
+|---|---|---|
+| [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID shortcut and media-key deck for the paired computer | Port of the CrowPanel 7" build, in development |
 
 ## Manufacturer resources
 
 - Product page: [ESP32 5 Inch 800×480 RGB IPS TFT Display Touch Screen Arduino LVGL](https://viewedisplay.com/product/esp32-5-inch-800x480-rgb-ips-tft-display-touch-screen-arduino-lvgl/)
-- Official GitHub repository — datasheets, schematics, 2D drawings, examples and factory firmware: [VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display)
-- Display Wiki — open display technology docs and tutorials: [display-wiki.com](https://www.display-wiki.com/)
-- VIEWE official website: [viewedisplay.com](https://viewedisplay.com/)
+- Official GitHub repository — datasheets, schematics, 2D drawings, examples, and factory firmware: [VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display)
+- Display Wiki — display technology docs and tutorials: [display-wiki.com](https://www.display-wiki.com/)
 - Sales / support: [info@viewedisplay.com](mailto:info@viewedisplay.com) · Wiki support: [viewedisplay@outlook.com](mailto:viewedisplay@outlook.com) · WhatsApp: [+852 6676 2053](https://wa.me/85266762053)
 
-## VIEWE on social media
+VIEWE on social media: [YouTube](https://www.youtube.com/@viewedisplay) · [Facebook](https://www.facebook.com/profile.php?id=61556567317171) · [LinkedIn](https://www.linkedin.com/company/viewe-technology-co-ltd/) · [TikTok](https://www.tiktok.com/@www.viewedisplay.com)
 
-[![VIEWE YouTube](https://img.shields.io/badge/YouTube-%40viewedisplay-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/@viewedisplay)
-[![VIEWE Facebook](https://img.shields.io/badge/Facebook-VIEWE_Display-1877F2?logo=facebook&logoColor=white)](https://www.facebook.com/profile.php?id=61556567317171)
-[![VIEWE LinkedIn](https://img.shields.io/badge/LinkedIn-VIEWE_Technology-0A66C2?logo=linkedin&logoColor=white)](https://www.linkedin.com/company/viewe-technology-co-ltd/)
-[![VIEWE TikTok](https://img.shields.io/badge/TikTok-%40viewedisplay-000000?logo=tiktok&logoColor=white)](https://www.tiktok.com/@www.viewedisplay.com)
+## Video guides
 
-## Component versions
-
-| Environment | esp32 core | LVGL | Notes |
-|---|---|---|---|
-| Arduino IDE (manufacturer setup) | 3.0.0+ | 8.4.0 | With `ESP32_Display_Panel` 1.0.3+ by Espressif; enable `BOARD_VIEWE_UEDX80480050E_WB_A` in `esp_panel_board_supported_conf.h` |
-| PlatformIO (projects above) | pinned per project | pinned per project | See each project's `platformio.ini` |
-
-The manufacturer also ships ESP-IDF (v5.3+) examples with LVGL v9 in the official repository.
-
-## Video walkthroughs
-
-Build and demo videos on the [Fusion Automate YouTube channel](https://www.youtube.com/channel/UCKKhdFV0q8CV5vWUDfiDfTw):
-
-- Videos for this board are in the works. Meanwhile, the sibling build for the Elecrow CrowPanel 7" — the base for the Bluetooth Stream Deck port — is in the [CrowPanel ESP32 7" playlist](https://www.youtube.com/playlist?list=PLxrSjjYyzaaImkFRbGMiRHKIos24P5MyG) and the [Elecrow repository](https://github.com/papercodeIN/Elecrow).
-
-## Support
-
-If these projects help you, consider supporting the channel:
-
-<a href="https://buymeacoffee.com/pylin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="36"></a>
-&nbsp;&nbsp;
-<a href="https://www.youtube.com/channel/UCKKhdFV0q8CV5vWUDfiDfTw" target="_blank"><img src="https://img.shields.io/badge/SUBSCRIBE%20ON%20YOUTUBE-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Subscribe on YouTube" height="36"></a>
-
-## Contact
-
-| Method | Details |
+| Tutorial | Video |
 |---|---|
-| Call / WhatsApp | [+91-9974477759](https://wa.me/919974477759) |
-| Telegram | [@fusionautomate](https://t.me/fusionautomate) |
-| Instagram | [@fusion_automate](https://www.instagram.com/fusion_automate) |
-| Email | [eng.innovativ@gmail.com](mailto:eng.innovativ@gmail.com) |
+| Bluetooth Stream Deck | Tutorial forthcoming — see the sibling [CrowPanel ESP32 7" playlist](https://www.youtube.com/playlist?list=PLxrSjjYyzaaImkFRbGMiRHKIos24P5MyG) in the meantime |
