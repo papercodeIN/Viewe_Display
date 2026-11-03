@@ -19,10 +19,28 @@
 
 A Wi-Fi digital photo frame for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 display (800x480, IPS RGB). The firmware serves a web dashboard on the local network: upload JPEG/PNG/BMP photos from a phone or laptop, arrange the slideshow, pick transitions, and control playback remotely. Photos are stored on the microSD card and shown as a full-screen slideshow with animated transitions.
 
-> [!IMPORTANT]
-> **Not tested on the display yet.** This firmware has never been flashed to a physical VIEWE 5-inch panel. Verify display output, SD mounting, and uploads on your board when you first run it.
+> [!NOTE]
+> **Tested on hardware.** This firmware runs on a physical VIEWE 5-inch panel: display output, SD mounting, web-dashboard uploads, and the slideshow are verified end to end, including the dashboard's auto-convert path for phone/WhatsApp photos.
 
-**Status — ported; PlatformIO build passes.** This is a port of the working [CrowPanel 7" Digital Photo Frame](https://github.com/papercodeIN/Elecrow/tree/main/CrowPanel%20-%20ESP32%20HMI%20Display%20-%207%20Inch/Project/Digital_Photo_Frame); the web dashboard, slideshow engine, transitions, upload pipeline, and settings are unchanged. The display configuration is the hardware-tested VIEWE 5-inch setup from the [Bluetooth Stream Deck](<../Bluetooth_Stream_Deck/README.md>) project in this repository (same panel recipe: ST7262 RGB bus, 15 MHz PCLK, PSRAM framebuffer), and the SD pin map was verified against the official [VIEWE schematic](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display).
+**Status — hardware-tested; PlatformIO build passes.** This is a port of the working [CrowPanel 7" Digital Photo Frame](https://github.com/papercodeIN/Elecrow/tree/main/CrowPanel%20-%20ESP32%20HMI%20Display%20-%207%20Inch/Project/Digital_Photo_Frame); the web dashboard, slideshow engine, transitions, upload pipeline, and settings are unchanged. The display configuration is the hardware-tested VIEWE 5-inch setup from the [Bluetooth Stream Deck](<../Bluetooth_Stream_Deck/README.md>) project in this repository (same panel recipe: ST7262 RGB bus, 15 MHz PCLK, PSRAM framebuffer), and the SD pin map was verified against the official [VIEWE schematic](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display).
+
+## Gallery
+
+Real photos of the finished frame will live here. Drop your images into the [`photos/`](photos/) folder using the exact filenames below and they load automatically — no README edit needed.
+
+<table>
+  <tr>
+    <td align="center"><img src="photos/frame-01.jpg" alt="Digital photo frame photo 1" width="390"/></td>
+    <td align="center"><img src="photos/frame-02.jpg" alt="Digital photo frame photo 2" width="390"/></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="photos/frame-03.jpg" alt="Digital photo frame photo 3" width="390"/></td>
+    <td align="center"><img src="photos/frame-04.jpg" alt="Digital photo frame photo 4" width="390"/></td>
+  </tr>
+</table>
+
+> [!TIP]
+> Name the files exactly `frame-01.jpg`, `frame-02.jpg`, `frame-03.jpg`, `frame-04.jpg` (lowercase, `.jpg`). A slot stays an empty placeholder until its file exists in `photos/`. Want more slots? Copy a `<td>…</td>` line and bump the number.
 
 ## What You Need
 
