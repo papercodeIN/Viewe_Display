@@ -38,7 +38,7 @@ This folder contains notes and projects for the VIEWE UEDX80480050E-WB 5-inch ES
 | Memory | 520 KB SRAM · 8 MB PSRAM (OPI) · 16 MB Flash |
 | Wireless | 2.4 GHz Wi-Fi 802.11 b/g/n, Bluetooth 5 (LE), BLE Mesh |
 | USB | Type-C via CH340C — power, flashing, and serial |
-| Extras | Micro SD card slot (SPI), WS2812B RGB LED, BOOT (GPIO0) / RESET buttons |
+| Extras | Micro SD card slot (SPI) — CS GPIO10, MOSI GPIO11, SCK GPIO12, MISO GPIO13 with on-board 10K pull-ups (verified from the official schematic), WS2812B RGB LED, BOOT (GPIO0) / RESET buttons |
 | Power | 5 V, 150 mA, −20 ~ 70 ℃ operating |
 
 > The touch controller shares GPIO19/20 with the ESP32-S3's native USB pins, so firmware keeps USB CDC disabled and flashing/serial runs over the CH340C UART port.
@@ -70,6 +70,8 @@ These are reference settings, not a universal configuration for every project or
 | Folder | Description | Readiness |
 |---|---|---|
 | [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID shortcut and media-key deck for the paired computer | Hardware-tested and working |
+| [Digital Photo Frame](<Project/Digital_Photo_Frame/README.md>) | Web-dashboard photo frame: SD-card slideshow, transitions, uploads, OTA | Ported — PlatformIO build verified; on-hardware check pending |
+| [ESP32 NAS](<Project/ESP32_NAS/README.md>) | WiFi NAS file server on the microSD slot: browser file manager, WiFi/AP setup portal, OTA | Ported — PlatformIO build verified; on-hardware check pending |
 
 ## Manufacturer resources
 
