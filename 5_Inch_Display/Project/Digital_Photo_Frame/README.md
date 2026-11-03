@@ -24,6 +24,12 @@ A Wi-Fi digital photo frame for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 displ
 
 **Status — hardware-tested; PlatformIO build passes.** This is a port of the working [CrowPanel 7" Digital Photo Frame](https://github.com/papercodeIN/Elecrow/tree/main/CrowPanel%20-%20ESP32%20HMI%20Display%20-%207%20Inch/Project/Digital_Photo_Frame); the web dashboard, slideshow engine, transitions, upload pipeline, and settings are unchanged. The display configuration is the hardware-tested VIEWE 5-inch setup from the [Bluetooth Stream Deck](<../Bluetooth_Stream_Deck/README.md>) project in this repository (same panel recipe: ST7262 RGB bus, 15 MHz PCLK, PSRAM framebuffer), and the SD pin map was verified against the official [VIEWE schematic](https://github.com/VIEWESMART/UEDX80480050ESP32-5inch-Touch-Display).
 
+## Web Dashboard
+
+The frame serves its own dashboard — open the IP shown on the display from any phone or laptop on the same network. Upload photos (drag & drop, with automatic baseline-JPEG conversion for phone/WhatsApp images), browse the photo library stored on the SD card, and control the slideshow remotely: play/pause, next/previous, re-render, fit mode, transition effect, slide duration, and brightness.
+
+![Web dashboard on a phone or laptop — upload photos and manage the slideshow](photos/web-dashboard.png)
+
 ## Gallery
 
 Real photos of the finished frame will live here. Drop your images into the [`photos/`](photos/) folder using the exact filenames below and they load automatically — no README edit needed.
