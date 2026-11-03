@@ -1,0 +1,14 @@
+.pio/
+.vscode/
+tasks/
+.DS_Store
+
+# WiFi credentials - never commit
+include/secrets.h
+
+# PlatformIO environment
+.env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
