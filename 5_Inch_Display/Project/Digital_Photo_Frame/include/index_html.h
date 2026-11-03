@@ -9,7 +9,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ESP32 Digital Photo Frame</title>
+<title>Digital Photo Frame by Fusion Automate</title>
 <style>
 :root{
   color-scheme:dark;
@@ -101,7 +101,7 @@ select:focus,input:focus{outline:none;border-color:var(--accent)}
   <div class="brand">
     <div class="brand-icon">&#128247;</div>
     <div>
-      <h1>Elecrow 7-inch Photo Frame</h1>
+      <h1>Digital Photo Frame by Fusion Automate</h1>
       <p id="hdrSub">Connecting...</p>
     </div>
   </div>
