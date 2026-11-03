@@ -26,6 +26,7 @@
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
 #include <Arduino_GFX_Library.h>
+#include <esp_heap_caps.h>
 #include <math.h>
 #include "config.h"
 
@@ -103,11 +104,17 @@ unsigned long sdFaultSince = 0;   // millis() when fault first detected (0 = no 
 int sdRetryCount = 0;             // mount retry attempts since fault
 
 // Upload state. Handlers run on the async_tcp task, pollers on loop();
-// every SD touch takes sdMutex. One upload at a time - a second upload
-// while one is in flight is rejected (two writers share one file handle).
+// every SD touch takes sdMutex. One upload at a time is buffered in PSRAM;
+// the completed transfer is written to SD under the same mutex.
 File uploadFile;
 volatile bool uploadFileOpen = false;
+volatile uint32_t uploadCallbackDepth = 0;
 volatile unsigned long lastUploadActivity = 0;
+volatile bool uploadInProgress = false;
+uint8_t* uploadBuffer = nullptr;
+size_t uploadBufferLen = 0;
+String uploadPath = "";
+static const size_t UPLOAD_BUFFER_CAP = 6UL * 1024UL * 1024UL;
 
 // Per-request upload verdict. Lives on the AsyncWebServerRequest via
 // _tempObject so concurrent requests report their own result instead of
@@ -137,6 +144,7 @@ void pollSD();
 void handleWiFiReconnect();
 void noteSDFault();
 void uploadAbortCleanup(const char* reason);
+bool writeUploadData(const uint8_t* data, size_t len);
 String formatBytes(uint64_t bytes);
 String jsonEscape(const String& input);
 String sanitizeFilename(const String& filename);
@@ -205,7 +213,30 @@ th.act,td.act{text-align:right;width:170px;white-space:nowrap}
 #toast.err{border-left:3px solid #f28b82}
 input[type=text],input[type=password]{padding:9px 10px;background:#101418;border:1px solid #2a313a;border-radius:8px;color:#e8eaed;width:100%;font-size:13px;margin-top:6px}
 .b{background:#8ab4f8;color:#101418;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;margin-top:10px}
-@media(max-width:820px){nav{display:none}th.act,td.act{width:auto}}
+@media(max-width:820px){
+ header{flex-wrap:wrap;padding:10px 12px}
+ .logo{font-size:18px}
+ #search{order:3;flex-basis:100%;min-width:0}
+ #layout{display:block;min-height:0}
+ nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:auto;padding:10px;background:#161b21;border-bottom:1px solid #2a313a}
+ nav .navitem{grid-column:1/-1;margin:0;padding:8px 10px}
+ .card{margin:0;padding:12px;min-width:0}
+ .card h3{margin-bottom:8px}
+ main{padding:12px}
+ th.act,td.act{width:auto}
+ .actbtn{padding:6px 8px;margin-left:3px}
+}
+@media(max-width:520px){
+ nav{grid-template-columns:1fr}
+ #mkdirBtn,#uploadBtn{padding:9px 11px}
+ #crumbs{margin-bottom:10px}
+ th{padding:7px 5px}
+ td{padding:8px 5px}
+ .chk{width:26px}
+ .size{width:72px;font-size:12px}
+ th.act,td.act{width:126px}
+ .actbtn{font-size:11px;padding:5px 6px}
+}
 </style></head>
 <body>
 <header><div class='logo'><b>NAS</b> ESP32 Drive</div>
@@ -217,7 +248,7 @@ input[type=text],input[type=password]{padding:9px 10px;background:#101418;border
 <span class='navitem active'>My Files</span>
 <div class='card'><h3>Storage</h3><div class='bar'><i id='stoBar'></i></div><p id='stoTxt'></p></div>
 <div class='card'><h3>Transfers</h3><p id='upSp'>&#8593; idle</p><p id='dnSp'>&#8595; idle</p></div>
-<div class='card'><h3>Device</h3><p id='netTxt'></p></div>
+<div class='card'><h3>Device &amp; WiFi</h3><p id='netTxt'></p></div>
 <div class='card hidden' id='wifiCard'><h3>WiFi Setup</h3>
 <input type='text' id='wS' placeholder='SSID'>
 <input type='password' id='wP' placeholder='Password'>
@@ -265,7 +296,7 @@ function paint(s){
 const used=s.totalGB-s.freeGB,pct=s.totalGB>0?Math.min(100,used*100/s.totalGB):0;
 const b=$('stoBar');b.style.width=pct+'%';b.style.background=pct>90?'#f28b82':pct>75?'#fdd663':'#8ab4f8';
 $('stoTxt').textContent=s.sdMounted?s.totalGB.toFixed(2)+' GB total \u00B7 '+s.freeGB.toFixed(2)+' GB free':'Not mounted';
-$('netTxt').textContent=s.apMode?'AP mode \u00B7 '+s.ip:(s.wifiConnected?'WiFi \u00B7 '+s.ssid:'Connecting...');
+$('netTxt').textContent=s.apMode?'AP mode \u00B7 '+s.ip:(s.wifiConnected?'WiFi \u00B7 '+s.ssid+' \u00B7 '+s.ip:'Connecting...');
 $('wifiCard').classList.toggle('hidden',!s.apMode)}
 function crumbs(p){const c=$('crumbs');c.textContent='';
 if(p!=='/'){const b=document.createElement('a');b.textContent='\u2039 Back';b.onclick=()=>nav(parentOf(p));c.appendChild(b)}
@@ -360,7 +391,7 @@ $('fileInput').onchange=e=>{const f=e.target.files[0];if(!f)return;
 const fd=new FormData();fd.append('file',f,f.name);
 $('upOv').classList.remove('hidden');$('upTxt').textContent='Uploading '+f.name;
 const t0=performance.now();
-const x=new XMLHttpRequest();x.open('POST','/upload');
+const x=new XMLHttpRequest();x.open('POST','/upload?dir='+enc(cur));
 x.upload.onprogress=ev=>{if(ev.lengthComputable){
 $('upBar').firstElementChild.style.width=Math.round(ev.loaded*100/ev.total)+'%';
 const dt=(performance.now()-t0)/1000;if(dt>0.2){const spd=ev.loaded/dt;
@@ -418,10 +449,11 @@ void loop() {
         tickSDErrorScreen();
     }
 
-    // Abandoned-upload watchdog: if the client vanished without a final
-    // chunk (browser closed, WiFi dropped), the async handler never runs
-    // again. Close the handle and remove the partial file after a stall.
-    if (uploadFileOpen && now - lastUploadActivity >= UPLOAD_STALL_TIMEOUT) {
+    // Abandoned-upload watchdog: if the client vanished while the transfer is
+    // being buffered in PSRAM, release the buffer after a stall. The SD file
+    // is not opened until the complete network transfer is available.
+    if (uploadInProgress && uploadCallbackDepth == 0 &&
+        now - lastUploadActivity >= UPLOAD_STALL_TIMEOUT) {
         uploadAbortCleanup("stalled");
     }
 
@@ -635,17 +667,55 @@ void uploadAbortCleanup(const char* reason) {
     if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
         return;
     }
+    bool cleanedFile = false;
     if (uploadFileOpen) {
         String partial = uploadFile.path();  // capture before close
         uploadFile.close();
         uploadFileOpen = false;
+        cleanedFile = true;
         if (sdMounted) {
             SD.remove(partial);
         }
-        Serial.printf("[UPLOAD] Aborted (%s) - partial file removed\n", reason);
     }
+    if (uploadBuffer != nullptr) {
+        free(uploadBuffer);
+        uploadBuffer = nullptr;
+    }
+    uploadBufferLen = 0;
+    uploadPath = "";
+    uploadInProgress = false;
+    Serial.printf("[UPLOAD] Aborted (%s) - %s released\n", reason,
+                  cleanedFile ? "partial file" : "PSRAM buffer");
     xSemaphoreGive(sdMutex);
     uiDirty = true;
+}
+
+// Write bounded pieces and retry briefly if FATFS reports no progress. This
+// is used for the final PSRAM-to-SD write; network callbacks never touch SD.
+bool writeUploadData(const uint8_t* data, size_t len) {
+    size_t writtenTotal = 0;
+    int noProgress = 0;
+
+    while (writtenTotal < len && noProgress < 8) {
+        size_t remaining = len - writtenTotal;
+        size_t piece = remaining > 4096 ? 4096 : remaining;
+        size_t written = uploadFile.write(data + writtenTotal, piece);
+
+        if (written > 0) {
+            writtenTotal += written;
+            noProgress = 0;
+        } else {
+            noProgress++;
+            delay(2);
+        }
+    }
+
+    if (writtenTotal != len) {
+        Serial.printf("[UPLOAD] Short write: %u of %u bytes\n",
+                      (unsigned)writtenTotal, (unsigned)len);
+        return false;
+    }
+    return true;
 }
 
 // ============================================================
@@ -1015,6 +1085,7 @@ void setupWebServer() {
             }
         },
         [](AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
+            uploadCallbackDepth++;
             lastUploadActivity = millis();
 
             // Per-request verdict state (malloc: _tempObject is freed with
@@ -1022,34 +1093,37 @@ void setupWebServer() {
             UploadState* st = (UploadState*)request->_tempObject;
             if (st == nullptr) {
                 st = (UploadState*)malloc(sizeof(UploadState));
-                if (st == nullptr) return;  // OOM: chunks dropped, response is 500
+                if (st == nullptr) {
+                    uploadCallbackDepth--;
+                    return;  // OOM: chunks dropped, response is 500
+                }
                 st->success = false;
                 st->rejected = false;
                 request->_tempObject = (void*)st;
             }
 
             // A rejected request drops every remaining chunk of its own
-            // transfer; the in-flight upload keeps the file handle.
-            if (st->rejected) return;
-
-            if (!sdMounted) {
-                if (uploadFileOpen) {
-                    if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(1000)) == pdTRUE) {
-                        uploadFile.close();
-                        uploadFileOpen = false;
-                        xSemaphoreGive(sdMutex);
-                    }
-                }
+            // transfer; the active upload keeps its private PSRAM buffer.
+            if (st->rejected) {
+                uploadCallbackDepth--;
                 return;
             }
 
-            // Guard against interleaved uploads: index == 0 starts a new
-            // transfer, so a zero index while a file handle is still open
-            // means a second, parallel upload sharing the same globals.
-            // Reject the newcomer instead of corrupting both transfers.
-            if (index == 0 && uploadFileOpen) {
+            if (!sdMounted) {
+                st->rejected = true;
+                uploadInProgress = false;
+                uploadCallbackDepth--;
+                return;
+            }
+
+            // Buffer the network transfer in PSRAM. Directly writing every
+            // multipart callback to SD makes laptop uploads vulnerable to
+            // FATFS/SPI timing and can return a zero-byte short write. The
+            // completed buffer is written once, under the SD mutex, below.
+            if (index == 0 && uploadInProgress) {
                 st->rejected = true;
                 Serial.println("[UPLOAD] Rejected: another upload already in progress");
+                uploadCallbackDepth--;
                 return;
             }
 
@@ -1057,44 +1131,90 @@ void setupWebServer() {
                 String safeName = sanitizeFilename(filename);
                 if (safeName.length() == 0) {
                     Serial.println("[UPLOAD] Rejected: invalid filename");
+                    st->rejected = true;
+                    uploadCallbackDepth--;
                     return;
                 }
-                String path = "/" + safeName;
-                if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
-                    Serial.println("[UPLOAD] SD busy, upload rejected");
+
+                String dir = "/";
+                if (request->hasParam("dir")) {
+                    dir = request->getParam("dir")->value();
+                }
+                if (!isPathSafe(dir)) {
+                    Serial.println("[UPLOAD] Rejected: invalid directory");
+                    st->rejected = true;
+                    uploadCallbackDepth--;
                     return;
                 }
-                uploadFile = SD.open(path, FILE_WRITE);
-                uploadFileOpen = (bool)uploadFile;
-                xSemaphoreGive(sdMutex);
-                Serial.printf("[UPLOAD] Start: %s (opened=%d)\n", path.c_str(), uploadFileOpen);
+                uploadPath = (dir == "/") ? ("/" + safeName)
+                                           : (dir + "/" + safeName);
+                uploadInProgress = true;
+                uploadBufferLen = 0;
+
+                if (uploadBuffer == nullptr) {
+                    uploadBuffer = (uint8_t*)heap_caps_malloc(UPLOAD_BUFFER_CAP, MALLOC_CAP_SPIRAM);
+                }
+                if (uploadBuffer == nullptr) {
+                    Serial.println("[UPLOAD] PSRAM buffer allocation failed");
+                    uploadInProgress = false;
+                    st->rejected = true;
+                    uploadCallbackDepth--;
+                    return;
+                }
+                Serial.printf("[UPLOAD] Buffering: %s\n", uploadPath.c_str());
             }
 
-            if (uploadFileOpen && len) {
-                if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) != pdTRUE) {
-                    Serial.println("[UPLOAD] SD busy mid-upload");
+            if (uploadBuffer != nullptr && len) {
+                if (len > UPLOAD_BUFFER_CAP - uploadBufferLen) {
+                    Serial.printf("[UPLOAD] File exceeds %u MB PSRAM upload limit\n",
+                                  (unsigned)(UPLOAD_BUFFER_CAP / (1024UL * 1024UL)));
+                    uploadInProgress = false;
+                    uploadBufferLen = 0;
+                    st->rejected = true;
+                    uploadCallbackDepth--;
                     return;
                 }
-                size_t written = uploadFile.write(data, len);
-                xSemaphoreGive(sdMutex);
-                if (written != len) {
-                    uploadAbortCleanup("partial write");
-                    Serial.println("[UPLOAD] Write error: partial write");
-                }
+                memcpy(uploadBuffer + uploadBufferLen, data, len);
+                uploadBufferLen += len;
             }
 
             if (final) {
-                if (uploadFileOpen) {
-                    if (xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) == pdTRUE) {
+                size_t bytes = uploadBufferLen;
+                bool ok = uploadInProgress && uploadBuffer != nullptr && bytes > 0;
+
+                if (ok && xSemaphoreTake(sdMutex, pdMS_TO_TICKS(2000)) == pdTRUE) {
+                    if (SD.exists(uploadPath)) {
+                        SD.remove(uploadPath);
+                    }
+                    uploadFile = SD.open(uploadPath, FILE_WRITE);
+                    uploadFileOpen = (bool)uploadFile;
+                    Serial.printf("[UPLOAD] Writing: %s (%u KB)\n",
+                                  uploadPath.c_str(), (unsigned)(bytes / 1024));
+                    ok = uploadFileOpen && writeUploadData(uploadBuffer, bytes);
+                    if (ok) {
+                        uploadFile.flush();
+                    }
+                    if (uploadFileOpen) {
                         uploadFile.close();
                         uploadFileOpen = false;
-                        st->success = true;
-                        xSemaphoreGive(sdMutex);
                     }
+                    if (!ok) {
+                        SD.remove(uploadPath);
+                        Serial.printf("[UPLOAD] SD write failed: %s\n", uploadPath.c_str());
+                    }
+                    xSemaphoreGive(sdMutex);
+                } else if (ok) {
+                    Serial.println("[UPLOAD] SD busy; final write rejected");
+                    ok = false;
                 }
+
+                st->success = ok;
+                uploadBufferLen = 0;
+                uploadInProgress = false;
                 Serial.printf("[UPLOAD] Done (success=%d)\n", st->success);
                 uiDirty = true;
             }
+            uploadCallbackDepth--;
         }
     );
 

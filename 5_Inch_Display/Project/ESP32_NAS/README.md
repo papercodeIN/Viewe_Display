@@ -19,9 +19,25 @@
 
 A WiFi network-attached storage (NAS) file server for the VIEWE UEDX80480050E-WB 5-inch ESP32-S3 display (800x480). Files live on the onboard microSD slot and are served over HTTP: browse, upload, download, delete, and create folders from any browser. The 5-inch screen shows a live status dashboard — IP address, WiFi state, and SD usage — and the firmware supports OTA updates once connected.
 
-**Status — build-verified port.** This is a port of the hardware-tested [CrowPanel 2.8" ESP32 NAS](https://github.com/papercodeIN/Elecrow/tree/main/CrowPanel%20-%20ESP32%20HMI%20Display%20-%202.8%20Inch/Project/ESP32_NAS) (same web UI, same endpoints, same WiFi/AP/OTA behavior). The PlatformIO build passes clean (no warnings) for the VIEWE 5-inch board. The display panel and touch init are the proven configuration from the [Bluetooth Stream Deck](<../Bluetooth_Stream_Deck/README.md>) port of this same display; SD pins (GPIO 10/11/12/13) are taken from the VIEWE schematic TF-card section.
+**Status — hardware tested.** This is a working port of the [CrowPanel 2.8" ESP32 NAS](https://github.com/papercodeIN/Elecrow/tree/main/CrowPanel%20-%20ESP32%20HMI%20Display%20-%202.8%20Inch/Project/ESP32_NAS) workflow to the VIEWE 5-inch display. The firmware has been flashed and tested on the VIEWE UEDX80480050E-WB: the RGB display, microSD storage, WiFi connection, web UI, AP setup flow, and OTA-ready runtime are operational. The display driver is based on the hardware-tested [Bluetooth Stream Deck](<../Bluetooth_Stream_Deck/README.md>) port; SD pins (GPIO 10/11/12/13) are taken from the VIEWE schematic TF-card section.
 
-> ⚠️ **Not tested on the display yet.** The firmware compiles clean for this board but has not been flashed to or validated on real hardware. When you flash it, keep the serial monitor open (`pio device monitor`) and check the boot log against the [Serial Log](#serial-log) section before relying on it.
+## Web UI
+
+The embedded browser interface provides a drive-style file manager with folder navigation, search, uploads with progress, streamed downloads, file deletion, bulk selection, and folder creation.
+
+![ESP32 NAS web file manager](images/web_ui.png)
+
+The live device was tested at `http://192.168.1.16`. The screenshot above shows the web UI with the `photos` folder and approximately 29.71 GB of free microSD storage.
+
+The firmware is tested over the CH340C serial port at 115200 baud. Keep the serial monitor open during future changes so display, SD, WiFi, and upload diagnostics remain visible.
+
+### Verified Hardware Status
+
+- RGB display boots reliably with the VIEWE-specific OPI-PSRAM board definition.
+- microSD storage, WiFi, mDNS, the web UI, AP setup, and OTA readiness have been tested on the display.
+- Photo uploads have been verified from both an Android phone and a Windows laptop.
+- The responsive mobile layout keeps storage, transfer, WiFi, and device information available above the file list.
+- Uploads are buffered in PSRAM and support files up to 6 MB; larger files are rejected to protect runtime memory.
 
 ## What You Need
 
@@ -32,13 +48,13 @@ A WiFi network-attached storage (NAS) file server for the VIEWE UEDX80480050E-WB
 
 Ported from and tested against:
 
-- PlatformIO `espressif32@6.9.0` (Arduino core 2.0.14)
+- PlatformIO `espressif32@6.9.0` (Arduino-ESP32 core 2.0.17)
 - GFX Library for Arduino `1.4.7` (RGB panel driver)
 - ESPAsyncWebServer `3.6.0` + AsyncTCP `3.3.2` (ESP32Async fork)
 
 ## Features
 
-- **Web file manager** — single-page app served from firmware: browse folders, search, bulk-select, upload with progress, download (streamed, live speed), delete, create folders
+- **Web file manager** — single-page app served from firmware: browse folders, search, bulk-select, upload with progress, download (streamed, live speed), delete, create folders; responsive mobile layout keeps storage, transfer, WiFi, and device status visible above the file list
 - **WiFi setup portal** — on first boot (or AP fallback) the device opens `NAS-Setup` and serves the same UI with a WiFi form; captive DNS redirects
 - **5-inch status dashboard** — IP, SSID, total/used/free GB, usage bar, OTA indicator; redraws only on state change (no flicker)
 - **AP fallback** — if the saved WiFi is unreachable, falls back to an open access point after 10 non-blocking retries
@@ -48,15 +64,20 @@ Ported from and tested against:
 - **NVS credential storage** — WiFi settings persist across reboots via Preferences
 - **secrets.h support** — optional default WiFi credentials, gitignored
 - **Path safety** — all file paths validated against `..` traversal; filenames sanitized; folder deletion refused
+- **Reliable laptop/photo uploads** — multipart data is buffered in PSRAM first, then written to SD after the transfer completes; uploads are stored in the folder currently open in the browser (up to 6 MB per file)
 
 ## Improvements Over the 2.8" Original
 
 - Per-request upload verdicts (a rejected parallel upload can no longer flip a good upload's HTTP result)
-- Abandoned-upload watchdog: stalled uploads are closed and partial files removed (15 s stall timeout)
+- Abandoned-upload watchdog: stalled PSRAM-buffered uploads are released (60 s stall timeout); final SD writes are retried in 4 KB pieces
 - SD access mutex between the async web task and the status poller (the original polled SD concurrently with handlers)
 - `/api/list` caps the JSON at ~60 KB (folders with thousands of entries no longer risk an OOM crash; `"truncated":true` is set when capped)
 - Partition table with OTA support (the original's single-slot layout could not do OTA)
 - ESP32Async fork of AsyncWebServer (actively maintained; same API)
+
+## Future Enhancements
+
+- **Multiple simultaneous uploads** — currently one upload is accepted at a time to protect the shared PSRAM buffer and SD write path. Concurrent uploads remain a possible future enhancement using per-request buffers and a queued SD writer.
 
 ## Project Structure
 
@@ -73,8 +94,12 @@ ESP32_NAS/
 │   └── secrets.h.example       # Template to copy to secrets.h
 ├── src/
 │   └── main.cpp                # Firmware (web UI embedded in PROGMEM)
+├── images/
+│   └── web_ui.png              # Web UI screenshot
 └── README.md
 ```
+
+The custom board definition uploads the application at `0x20000`, matching the OTA partition table. This alignment is required because the OTA data partition occupies `0x10000`–`0x11FFF`.
 
 ## Hardware Notes
 
@@ -157,12 +182,12 @@ pio run -t upload --upload-port viewe-nas.local
 | `/api/status` | GET | SD mount state, GB total/free, WiFi/AP state, SSID, IP, hostname |
 | `/api/list?dir=/path` | GET | Directory listing JSON (folders first in the UI; ~60 KB cap with `truncated` flag) |
 | `/api/mkdir` | POST | Create folder (`dir`, `name`) |
-| `/upload` | POST | Multipart upload to the target directory (one file per request) |
+| `/upload?dir=/path` | POST | Multipart upload to the selected directory (one file per request) |
 | `/download?file=/path` | GET | Stream a file as an attachment |
 | `/delete?file=/path` | GET | Delete a file (folders refused) |
 | `/setwifi` | POST | Save WiFi credentials (AP mode only, reboots) |
 
-Uploads land in the directory you are browsing; subfolder navigation is supported for browsing/download, uploads always write to the current folder root.
+Uploads land in the directory you are browsing; subfolder navigation is supported for browsing, upload, and download.
 
 ## Serial Log
 
@@ -176,6 +201,8 @@ Uploads land in the directory you are browsing; subfolder navigation is supporte
 [HTTP] Web server started (ESP32 Drive UI)
 === Setup complete ===
 ```
+
+During a successful photo upload, the upload section reports `Done (success=1)` after the complete multipart transfer has been buffered and written to the microSD card.
 
 ## Troubleshooting
 
@@ -193,9 +220,9 @@ Uploads land in the directory you are browsing; subfolder navigation is supporte
 - Wrong saved credentials: erase NVS (`esptool.py erase_region 0x9000 0x6000`) and reboot — the device returns to AP setup
 
 **Upload fails:**
-- Serial shows the reason (`SD busy`, `invalid filename`, `partial write`)
+- Serial shows the reason (`SD busy`, `invalid filename`, `PSRAM buffer allocation failed`, or `SD write failed`)
 - Only one upload at a time is accepted; a second parallel upload is rejected until the first finishes
-- If the stall watchdog removed a partial file, just retry
+- Uploads are buffered in PSRAM before the SD write; if a browser disconnects between chunks, the buffer is released after the 60-second timeout
 
 **OTA upload fails:**
 - OTA needs both app slots healthy — after a failed OTA, plain USB re-flash restores a clean state

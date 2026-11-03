@@ -83,6 +83,6 @@
 #define WIFI_RETRY_INTERVAL     10000
 #define WIFI_CONNECT_TIMEOUT    60000
 #define SD_RETRY_ANIM_INTERVAL  500   // SD-fault animation tick (small area, no flicker)
-#define UPLOAD_STALL_TIMEOUT    15000 // abandoned upload: close + remove partial file
+#define UPLOAD_STALL_TIMEOUT    60000 // abandoned upload: release PSRAM buffer
 
 #endif // CONFIG_H
