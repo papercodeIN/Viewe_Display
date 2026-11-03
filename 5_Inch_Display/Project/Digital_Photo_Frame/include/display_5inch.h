@@ -18,8 +18,10 @@
 // helper, so this class adds the small LovyanGFX-style surface the ported
 // photo-frame code was written against:
 //   - pushImage() routes to draw16bitBeRGBBitmap() when byte-swapped input is
-//     selected (TJpg_Decoder with setSwapBytes(true) emits big-endian pixels)
-//     and to draw16bitRGBBitmap() otherwise (native-order pixels).
+//     selected and to draw16bitRGBBitmap() otherwise. TJpg_Decoder's callback
+//     delivers native-order RGB565 (its own swap flag is left false), so the
+//     photo renderers use setSwapBytes(false) and the native path; the Be path
+//     stays available for any future source that hands over big-endian pixels.
 //   - drawCentreString() reproduces LovyanGFX's centred text; its font-number
 //     argument maps to Adafruit-style text scaling (font 1/2/4 -> x1/x2/x4).
 //   - setBrightness() drives the backlight LED with LEDC PWM (GPIO 2);

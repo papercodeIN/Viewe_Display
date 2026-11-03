@@ -112,9 +112,13 @@ static bool renderJPEG(const char* filepath, FitMode fitMode) {
         y0 = (SCREEN_HEIGHT - scaledH) / 2;
     }
 
-    // TJpg_Decoder's swap flag emits big-endian pixels; the display shim routes
-    // pushImage to draw16bitBeRGBBitmap to swap them into framebuffer order.
-    tft.setSwapBytes(true);
+    // TJpg_Decoder's callback emits native-order RGB565 (its own swap flag is
+    // false), and the Arduino_GFX RGB framebuffer stores native-order pixels, so
+    // the blocks are blitted untouched through draw16bitRGBBitmap — the same
+    // convention as the PNG and BMP paths. setSwapBytes(true) here would route
+    // pushImage to draw16bitBeRGBBitmap, which byte-swaps every pixel and
+    // scrambles the image colors.
+    tft.setSwapBytes(false);
     tft.fillScreen(TFT_BLACK);
     res = TJpgDec.drawSdJpg(x0, y0, filepath);
     xSemaphoreGive(sdMutex);
