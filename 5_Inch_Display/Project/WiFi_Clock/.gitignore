@@ -1,0 +1,20 @@
+# PlatformIO
+.pio/
+.vscode/
+*.bin
+*.elf
+*.map
+
+# Secrets
+secrets.h
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+# Scratch / audit working files
+tmp_audit/
+src/idf_component.yml.orig
