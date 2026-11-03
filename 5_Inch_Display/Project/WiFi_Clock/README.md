@@ -92,6 +92,12 @@ In VS Code: open the project folder, then use the PlatformIO toolbar
 
 ### Toolchain notes (read if the build fails)
 
+- **Isolated toolchain.** `platformio.ini` sets `packages_dir = .pio/packages`,
+  so this project keeps its own Arduino core 3.3.9, LVGL and toolchain copies
+  under `.pio/packages` instead of the shared `~/.platformio/packages`. Other
+  projects or platform versions on the same machine cannot clobber them. The
+  first build downloads several GB into that folder; `.pio/` is git-ignored.
+
 - **Do not build from Git Bash / MSYS2.** Espressif's `idf_tools.py` refuses
   MSYS environments ("MSys/Mingw is not supported"), which leaves the esptool
   package half-installed and breaks the build with
@@ -103,9 +109,9 @@ In VS Code: open the project folder, then use the PlatformIO toolbar
   cmd //c "set MSYSTEM=&& %USERPROFILE%\.platformio\penv\Scripts\python.exe -m platformio run"
   ```
 
-- If the build fails with `TypeError: ... 'NoneType'` inside the Espressif
-  platform scripts, the shared Arduino-core package folder was clobbered by
-  another platform version. Remove the stale packages and rebuild —
+- If a global-store build ever fails with `TypeError: ... 'NoneType'` inside
+  the Espressif platform scripts (older checkouts without the
+  `packages_dir` pin), remove the clobbered shared packages and rebuild —
   `platformio.ini` pins the correct core and re-downloads it:
 
   ```bash
