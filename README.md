@@ -41,6 +41,7 @@ See the [5-inch board page](<5_Inch_Display/README.md>) for setup notes and proj
 | [Bluetooth Stream Deck](<5_Inch_Display/Project/Bluetooth_Stream_Deck/README.md>) | Touchscreen shortcut panel that sends BLE HID media keys and keyboard shortcuts to the paired computer; port of the CrowPanel 7" build, hardware-tested and working |
 | [Digital Photo Frame](<5_Inch_Display/Project/Digital_Photo_Frame/README.md>) | Wi-Fi photo frame with a web dashboard — upload photos, slideshow with transitions, SD-card storage, OTA; port of the CrowPanel 7" build |
 | [ESP32 NAS](<5_Inch_Display/Project/ESP32_NAS/README.md>) | Wi-Fi NAS file server on the onboard microSD slot — browser file manager (upload/download/delete), WiFi setup portal with AP fallback, OTA; port of the CrowPanel 2.8" build |
+| [Wireless Second Screen](<5_Inch_Display/Project/2nd_Screen/README.md>) | PC screen mirroring to the 5" ESP32-S3 display over Wi-Fi (MJPEG/TCP), with touch-to-mouse input backchannel and cursor-following zoom/magnification |
 
 ### Round display — model to be added
 

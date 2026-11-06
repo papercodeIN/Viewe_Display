@@ -72,6 +72,7 @@ These are reference settings, not a universal configuration for every project or
 | [Bluetooth Stream Deck](<Project/Bluetooth_Stream_Deck/README.md>) | BLE HID shortcut and media-key deck for the paired computer | Hardware-tested and working |
 | [Digital Photo Frame](<Project/Digital_Photo_Frame/README.md>) | Web-dashboard photo frame: SD-card slideshow, transitions, uploads, OTA | Ported — PlatformIO build verified; on-hardware check pending |
 | [ESP32 NAS](<Project/ESP32_NAS/README.md>) | WiFi NAS file server on the microSD slot: browser file manager, WiFi/AP setup portal, OTA | Ported — PlatformIO build verified; on-hardware check pending |
+| [Wireless Second Screen](<Project/2nd_Screen/README.md>) | PC screen mirroring over Wi-Fi (MJPEG/TCP) with GT911 touch-to-mouse backchannel and cursor-following zoom | Fully built, tested & hardware validated |
 
 ## Manufacturer resources
 
