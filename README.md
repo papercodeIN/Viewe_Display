@@ -1,26 +1,18 @@
-<div align="center">
+<img align="right" src="https://visitor-badge.laobi.icu/badge?page_id=papercodeIN.Viewe_Display" height="20" />
 
-<img src="https://visitor-badge.laobi.icu/badge?page_id=papercodeIN.Viewe_Display" alt="Repository visitors" height="20" />
+<h1 align="center">🌟 VIEWE Display 🌟</h1>
 
-# Viewe Display Projects
-
-**Open-source firmware, examples, and build notes for VIEWE development boards**
-
-[![Boards](https://img.shields.io/badge/hardware-VIEWE-2F4F7F)](https://viewedisplay.com/)
-[![Framework](https://img.shields.io/badge/framework-Arduino_/_PlatformIO-00979D?logo=arduino)](https://platformio.org/)
-[![UI](https://img.shields.io/badge/UI-LVGL-32A3CE)](https://lvgl.io/)
 <p align="center">
-  <strong>Support</strong><br>
-  If these projects help you, connect with us on social media:
+  <em>Projects for the VIEWE 5-inch 800x480 ESP32-S3 smart display — Bluetooth Stream Deck and more</em>
 </p>
 
-
-[![YouTube](https://img.shields.io/badge/YouTube-Fusion_Automate-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCKKhdFV0q8CV5vWUDfiDfTw)
-[![Telegram](https://img.shields.io/badge/Telegram-%40fusionautomate-26A5E4?logo=telegram&logoColor=white)](https://t.me/fusionautomate)
-[![Instagram](https://img.shields.io/badge/Instagram-%40fusion__automate-E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/fusion_automate)
-[![WhatsApp](https://img.shields.io/badge/WhatsApp-%2B91--9974477759-25D366?logo=whatsapp&logoColor=white)](https://wa.me/919974477759)
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy_Me_a_Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/pylin)
-</div>
+<p align="center">
+  <a href="https://www.youtube.com/@Fusion_Automate"><img src="https://img.shields.io/badge/YouTube-FusionAutomate-%23FF0000?style=for-the-badge&logo=youtube" alt="YouTube"></a>
+  <a href="https://www.instagram.com/fusion_automate"><img src="https://img.shields.io/badge/Instagram-fusion__automate-%23E4405F?style=for-the-badge&logo=instagram" alt="Instagram"></a>
+  <a href="https://x.com/fusion_automate"><img src="https://img.shields.io/badge/X-fusion__automate-000000?style=for-the-badge&logo=x" alt="X (Twitter)"></a>
+  <a href="https://t.me/fusionautomate"><img src="https://img.shields.io/badge/Telegram-%40fusionautomate-%2326A5E4?style=for-the-badge&logo=telegram" alt="Telegram"></a>
+  <a href="https://fusionautomate.in/"><img src="https://img.shields.io/badge/Website-fusionautomate.in-blueviolet?style=for-the-badge" alt="Website"></a>
+</p>
 
 ---
 
@@ -66,3 +58,25 @@ Build and demo videos on the [Fusion Automate YouTube channel](https://www.youtu
 2. Read its README for required hardware, dependencies, wiring, and build status.
 3. Use Arduino IDE/CLI or PlatformIO as specified by that project; sketch-only examples may need additional setup.
 4. Find boards and product details at [VIEWE Display](https://viewedisplay.com/).
+
+---
+
+## 📞 Contact
+
+| 📞 Method | 🔗 Details |
+|-----------|-----------|
+| Call / WhatsApp | [+91-9974477759](https://wa.me/919974477759) |
+| Telegram | [@fusionautomate](https://t.me/fusionautomate) |
+| Email | [eng.innovativ@gmail.com](mailto:eng.innovativ@gmail.com) |
+
+## 💖 Support My Work
+
+<p align="center">
+  <a href="https://buymeacoffee.com/pylin" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 50px; width: 180px;">
+  </a>
+</p>
+
+<p align="center">
+  ⭐ Star this repo if it helped you · 🔔 <a href="https://github.com/papercodeIN">Follow Fusion Automate</a>
+</p>
